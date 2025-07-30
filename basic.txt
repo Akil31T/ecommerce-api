@@ -1,0 +1,8 @@
+we will follow module rulse for API Development
+
+1.Interface
+2.Model & Mongo schema
+3.Zod validation schema
+4.Routes
+5.Contoller
+6.Services
