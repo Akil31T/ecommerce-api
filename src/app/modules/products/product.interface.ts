@@ -2,11 +2,11 @@ export type TProduct = {
     name: string;
     description: string;
     price: number;
+    image: string;
     category: string;
     tags: string[];
     variants: TVariant[];
-    inventory: TInventory
-
+    inventory: TInventory,
 }
 
 export type TVariant = {

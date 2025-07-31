@@ -17,6 +17,7 @@ const ProductSchema = new Schema<TProduct>({
         type: String,
         required: true,
     },
+    image:String,
     description: String,
     price: Number,
     category: String,
