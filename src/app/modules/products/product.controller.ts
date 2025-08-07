@@ -3,12 +3,24 @@ import { Request, Response } from "express"
 import productValidationSchema from "./product.validataion";
 import { ProductServices } from "./product.service";
 import { TProduct } from "./product.interface";
+import { Product } from "./product.model";
 
 
 const createProduct = async (req: Request, res: Response) => {
     try {
         const parsed = productValidationSchema.parse(req.body);
+        const nameToCheck = parsed.name.trim().toLowerCase();
 
+        const existing = await Product.findOne({
+            name: { $regex: new RegExp(`^${nameToCheck}$`, 'i') }
+        });
+
+        if (existing) {
+            return res.status(409).json({
+                success: false,
+                message: "Product with the same name already exists",
+            });
+        }
         const imageUrl = req.file
             ? `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`
             : req.body.image;
@@ -17,6 +29,7 @@ const createProduct = async (req: Request, res: Response) => {
             ...parsed,
             image: imageUrl,
         };
+        console.log("Product Data:", productData);
 
         const result = await ProductServices.createAProductIntoDB(productData);
 
