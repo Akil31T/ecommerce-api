@@ -47,11 +47,11 @@ import { Product } from "./product.model";
 
 const createProduct = async (req: Request, res: Response) => {
   try {
-    const imageUrl = req.file
-      ? `${req.protocol}://${req.get("host")}/api/uploads/${req.file.filename}`
-      : null;
+    // const imageUrl = req.file
+    //   ? `${req.protocol}://${req.get("host")}/api/uploads/${req.file.filename}`
+    //   : null;
     // const image = req.file ? req.file.filename : null;
-
+    let image;
     const product = await Product.create({
       name: req.body.name,
       description: req.body.description,
@@ -59,7 +59,7 @@ const createProduct = async (req: Request, res: Response) => {
       category: req.body.category,
       stock: req.body.stock,
       status: req.body.status,
-      image: imageUrl,
+      image: image,
     });
 
     res.status(201).json({
