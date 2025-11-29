@@ -17,6 +17,7 @@ const productValidationSchema = zod_1.z.object({
     category: zod_1.z.string(),
     tags: zod_1.z.array(zod_1.z.string()),
     variants: zod_1.z.array(exports.variantValidationSchema),
-    inventory: exports.inventoryValidationSchema
+    inventory: exports.inventoryValidationSchema,
+    image: zod_1.z.string().url().optional(),
 });
 exports.default = productValidationSchema;

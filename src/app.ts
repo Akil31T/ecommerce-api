@@ -19,6 +19,8 @@ mongoose
   .catch((err) => console.error("❌ MongoDB connection error:", err));
 
   
+  app.use('/api/uploads', express.static(path.join(__dirname, 'uploads')));
+
 // 👇 Start server
 app.listen(port, () => {
   console.log(`Server running`);
