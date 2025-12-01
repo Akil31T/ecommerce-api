@@ -5,6 +5,9 @@ import path from "path";
 import { ProductRoutes } from "./app/modules/products/product.routes";
 import { UserRoutes } from "./app/modules/users/user.routes";
 import mongoose from "mongoose";
+import { v2 as cloudinary } from 'cloudinary';
+import config from "./app/config";
+
 
 const app = express();
 const port = 5000;
@@ -19,8 +22,6 @@ mongoose
   .catch((err) => console.error("❌ MongoDB connection error:", err));
 
   
-  // app.use('/api/uploads', express.static(path.join(__dirname, 'uploads')));
-
 // 👇 Start server
 app.listen(port, () => {
   console.log(`Server running`);
@@ -36,34 +37,5 @@ app.get('/', (req, res) => {
 });
 
 
-
-// Serve uploaded images
-// app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
-
-// Setup multer for file storage
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, path.join(__dirname, '..', 'products')); // absolute path to uploads
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname)); // unique filename
-  }
-});
-
-const upload = multer({ storage });
-
-// 👇 Upload API Route
-app.post('/api/upload', upload.single('image'), (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ success: false, message: 'No file uploaded' });
-  }
-  const fullUrl = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
-
-  res.json({
-    success: true,
-    message: "Image uploaded successfully",
-    filePath: fullUrl,
-  });
-});
 
 export default app;

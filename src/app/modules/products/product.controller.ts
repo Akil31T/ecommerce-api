@@ -1,9 +1,8 @@
 import { Request, Response } from "express";
-import productValidationSchema from "./product.validataion";
+// import { v2 as } from "cloudinary";
 import { ProductServices } from "./product.service";
-import { TProduct } from "./product.interface";
 import { Product } from "./product.model";
-
+import cloudinary from "../../middlewares/cloudinary";
 // const createProduct = async (req: Request, res: Response) => {
 //     try {
 //         const parsed = productValidationSchema.parse(req.body);
@@ -47,33 +46,35 @@ import { Product } from "./product.model";
 
 const createProduct = async (req: Request, res: Response) => {
   try {
-    // const imageUrl = req.file
-    //   ? `${req.protocol}://${req.get("host")}/api/uploads/${req.file.filename}`
-    //   : null;
-    // const image = req.file ? req.file.filename : null;
-    let image;
+    let imageUrl = null;
+
+    if (req.file) {
+      const uploadResult = await new Promise<any>((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { folder: "products" },
+          (err, result) => {
+            if (err) reject(err);
+            else resolve(result);
+          }
+        );
+        stream.end(req.file!.buffer);
+      });
+
+      imageUrl = (uploadResult && (uploadResult as any).secure_url) || null;
+    }
+
     const product = await Product.create({
-      name: req.body.name,
-      description: req.body.description,
-      price: req.body.price,
-      category: req.body.category,
-      stock: req.body.stock,
-      status: req.body.status,
-      image: image,
+      ...req.body,
+      image: imageUrl,
     });
 
-    res.status(201).json({
-      success: true,
-      message: "Product created",
-      data: product,
-    });
+    res.json({ success: true, data: product });
+
   } catch (err: any) {
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
+    res.status(500).json({ success: false, message: err.message });
   }
 };
+
 
 const getAllProducts = async (req: Request, res: Response) => {
   // const result =  await ProductServices.getProductsFromDB();
