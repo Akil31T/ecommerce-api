@@ -4,6 +4,7 @@ export type TProduct = {
     price: number;
     image: string;
     category: string;
+    stock: number;
     tags: string[];
     variants: TVariant[];
     inventory: TInventory,
