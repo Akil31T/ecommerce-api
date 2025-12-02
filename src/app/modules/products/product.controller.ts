@@ -1,48 +1,7 @@
 import { Request, Response } from "express";
-// import { v2 as } from "cloudinary";
 import { ProductServices } from "./product.service";
 import { Product } from "./product.model";
 import cloudinary from "../../middlewares/cloudinary";
-// const createProduct = async (req: Request, res: Response) => {
-//     try {
-//         const parsed = productValidationSchema.parse(req.body);
-//         const nameToCheck = parsed.name.trim().toLowerCase();
-
-//         const existing = await Product.findOne({
-//             name: { $regex: new RegExp(`^${nameToCheck}$`, 'i') }
-//         });
-
-//         if (existing) {
-//             return res.status(409).json({
-//                 success: false,
-//                 message: "Product with the same name already exists",
-//             });
-//         }
-//         const imageUrl = req.file
-//             ? `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`
-//             : req.body.image;
-
-//         const productData: TProduct = {
-//             ...parsed,
-//             image: imageUrl,
-//         };
-//         console.log("Product Data:", productData);
-
-//         const result = await ProductServices.createAProductIntoDB(productData);
-
-//         res.status(200).json({
-//             success: true,
-//             message: "Product created successfully",
-//             data: result,
-//         });
-//     } catch (err: any) {
-//         res.status(500).json({
-//             success: false,
-//             message: err.message || "Something went wrong",
-//             error: err,
-//         });
-//     }
-// };
 
 const createProduct = async (req: Request, res: Response) => {
   try {
@@ -69,12 +28,10 @@ const createProduct = async (req: Request, res: Response) => {
     });
 
     res.json({ success: true, data: product });
-
   } catch (err: any) {
     res.status(500).json({ success: false, message: err.message });
   }
 };
-
 
 const getAllProducts = async (req: Request, res: Response) => {
   // const result =  await ProductServices.getProductsFromDB();
@@ -126,13 +83,59 @@ const getSingleProduct = async (req: Request, res: Response) => {
 const updateProduct = async (req: Request, res: Response) => {
   try {
     const { productId } = req.params;
-    const data = req.body;
-    const result = await ProductServices.updateProductIntoDB(productId, data);
+
+    let imageUrl = null;
+
+    console.log("BODY:", req.body);
+    console.log("FILE:", req.file);
+
+    // Upload image if new file provided
+    if (req.file) {
+      const file = req.file;
+      const uploadResult = await new Promise<any>((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { folder: "products" },
+          (err, result) => {
+            if (err) reject(err);
+            else resolve(result);
+          }
+        );
+        stream.end(file.buffer);
+      });
+
+      imageUrl = uploadResult.secure_url;
+    }
+
+    // Build update data
+    const updateData: any = {
+      ...req.body,
+    };
+
+    // Only set image if new file uploaded
+    if (imageUrl) {
+      updateData.image = imageUrl;
+    }
+
+    // Update product
+    const result = await Product.findByIdAndUpdate(
+      productId,
+      updateData,
+      { new: true }
+    );
+
+    if (!result) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
+    }
+
     res.status(200).json({
       success: true,
       message: "Product updated successfully",
       data: result,
     });
+
   } catch (err: any) {
     res.status(500).json({
       success: false,
@@ -141,6 +144,7 @@ const updateProduct = async (req: Request, res: Response) => {
     });
   }
 };
+
 export const ProductControllers = {
   createProduct,
   getAllProducts,
