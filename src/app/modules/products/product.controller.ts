@@ -95,13 +95,15 @@ const updateProduct = async (req: Request, res: Response) => {
 
     let imageUrl = null;
 
-    req.body.name = req.body.name?.toLowerCase().trim();
+    const existingProduct = await Product.findOne({
+      name: req.body.name,
+      _id: { $ne: productId }, // exclude the product being updated
+    });
 
-    const existingProduct = await Product.findOne({ name: req.body.name });
     if (existingProduct) {
       return res.status(400).json({
         success: false,
-        message: "Product with this name already exists",
+        message: "Another product with this name already exists",
       });
     }
 
