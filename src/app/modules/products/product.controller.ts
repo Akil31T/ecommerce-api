@@ -6,6 +6,15 @@ import cloudinary from "../../middlewares/cloudinary";
 const createProduct = async (req: Request, res: Response) => {
   try {
     let imageUrl = null;
+    req.body.name = req.body.name?.toLowerCase().trim();
+
+    const existingProduct = await Product.findOne({ name: req.body.name });
+    if (existingProduct) {
+      return res.status(400).json({
+        success: false,
+        message: "Product with this name already exists",
+      });
+    }
 
     if (req.file) {
       const uploadResult = await new Promise<any>((resolve, reject) => {
@@ -86,10 +95,16 @@ const updateProduct = async (req: Request, res: Response) => {
 
     let imageUrl = null;
 
-    console.log("BODY:", req.body);
-    console.log("FILE:", req.file);
+    req.body.name = req.body.name?.toLowerCase().trim();
 
-    // Upload image if new file provided
+    const existingProduct = await Product.findOne({ name: req.body.name });
+    if (existingProduct) {
+      return res.status(400).json({
+        success: false,
+        message: "Product with this name already exists",
+      });
+    }
+
     if (req.file) {
       const file = req.file;
       const uploadResult = await new Promise<any>((resolve, reject) => {
@@ -106,22 +121,18 @@ const updateProduct = async (req: Request, res: Response) => {
       imageUrl = uploadResult.secure_url;
     }
 
-    // Build update data
     const updateData: any = {
       ...req.body,
     };
 
-    // Only set image if new file uploaded
     if (imageUrl) {
       updateData.image = imageUrl;
     }
 
     // Update product
-    const result = await Product.findByIdAndUpdate(
-      productId,
-      updateData,
-      { new: true }
-    );
+    const result = await Product.findByIdAndUpdate(productId, updateData, {
+      new: true,
+    });
 
     if (!result) {
       return res.status(404).json({
@@ -135,7 +146,6 @@ const updateProduct = async (req: Request, res: Response) => {
       message: "Product updated successfully",
       data: result,
     });
-
   } catch (err: any) {
     res.status(500).json({
       success: false,
