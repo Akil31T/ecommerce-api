@@ -18,6 +18,7 @@ const ProductSchema = new Schema<TProduct>({
     description: String,
     price: Number,
     category: String,
+    status: { type: String, default: 'active' },
     stock: Number,
     tags: [String],
     variants: [VariantSchema],

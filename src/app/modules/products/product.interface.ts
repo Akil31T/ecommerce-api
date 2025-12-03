@@ -5,6 +5,7 @@ export type TProduct = {
     image: string;
     category: string;
     stock: number;
+    status: string;
     tags: string[];
     variants: TVariant[];
     inventory: TInventory,
